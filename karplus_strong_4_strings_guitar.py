@@ -1,8 +1,8 @@
 '''
 Author: Joao Nuno Carvalho
 email:  joaonunocarv ( __AT__ ) gmail.com
-Description: This Pyhton 3.5 program is a real-time implementation of simultaneous 4 string guitar simulation with
-             the algorithm of Karplus Strong. This program uses PyAudio lib and NumPy.
+Description: This Python 3.5 program is a real-time implementation of simultaneous 4 string guitar simulation with
+             the algorithm of Karplus and Strong. This program uses PyAudio lib and NumPy.
              In Windows I used the Anaconda 3.5 distribution, see PyAudio page to learn how to install PyAudio.
 
             For Karplus-Strong details see the paper:
@@ -44,7 +44,7 @@ p = pyaudio.PyAudio()
 number_of_strings = 4
 # Initialize the 4 flag_plunk to False.
 flag_plunk = [False, False, False, False]
-# Initialize the 4 Karplus String buffer sizes each with a different size for a different string tone.
+# Initialize the 4 Karplus-Strong buffer sizes each with a different size for a different string tone.
 buffer_ks_size = [200, 210, 220, 230]
 
 buffer_ks = []
@@ -75,13 +75,13 @@ def copy_buffer_ks_to_buffer_output(result, frame_count):
         for string in range(0, number_of_strings):
             result[i, 0] += buffer_ks[string][ptr_in[string]]
         result[i, 0] /= number_of_strings
-        # Righ channel.
+        # Right channel.
         result[i, 1] = result[i, 0]  # Copy the left channel value to the right channel.
 
         for string in range(0, number_of_strings):
             buffer_ks[string][ptr_in[string]] = factor * ( buffer_ks[string][ptr_in[string]] + buffer_ks[string][ptr_out[string]] )
 
-        # Update the global pointers of the circukar buffer.
+        # Update the global pointers of the circular buffer.
         for string in range(0, number_of_strings):
             if ptr_in[string] < buffer_ks_size[string] - 1:
                 ptr_in[string] += 1
@@ -127,7 +127,7 @@ def encode(signal):
 def encode_int16(signal):
     # Convert a 2D numpy array into a byte stream for PyAudio
     # Signal has chunk_size rows and channels columns.
-    # The output is scalled to a int16 value not a -1 to 1 value.
+    # The output is scaled to a int16 value not a -1 to 1 value.
     interleaved = signal.flatten()
     interleaved = interleaved * ((2**15) - 1)
     out_data = interleaved.astype(np.int16).tostring()
@@ -151,7 +151,7 @@ def callback(in_data, frame_count, time_info, flag):
 def _find_getch():
     """
     This function is used to obtain the correct function (Windows/Linux) to get a single char from
-    the stdin input stream. It will capature the keystrokes of each key for each string of the guitar.
+    the stdin input stream. It will capture the keystrokes of each key for each string of the guitar.
     """
     try:
         import termios
@@ -186,10 +186,10 @@ stream = p.open(format=pyaudio.paFloat32,
 stream.start_stream()
 
 print('frame_count inside callback:', frame_count_global )
-print('Press q, w, e, r to plunk a stering (p to quit): ')
+print('Press q, w, e, r to plunk a string (p to quit): ')
 while stream.is_active():
     # time.sleep(0.1) # 0.5
-    # ch = input("Press q, w, e, r to plunk a stering (p to quit): ")
+    # ch = input("Press q, w, e, r to plunk a string (p to quit): ")
     ch = getch()
     ch = ch.decode('ASCII')
 

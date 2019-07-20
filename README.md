@@ -1,6 +1,6 @@
 # Karplus Strong RT guitar simulation
 
-This Pyhton 3.5 program is a real-time implementation of simultaneous 4 string guitar simulation with the algorithm of Karplus Strong. 
+This Python 3.5 program is a real-time implementation of simultaneous 4 string guitar simulation with the algorithm of Karplus and Strong. 
 
 This program uses PyAudio lib and NumPy.
 
