@@ -29,6 +29,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+
 import pyaudio
 import time
 import numpy as np
@@ -47,16 +48,18 @@ flag_plunk = [False, False, False, False]
 # Initialize the 4 Karplus String buffer sizes each with a different size for a different string tone.
 buffer_ks_size = [200, 210, 220, 230]
 
-buffer_ks = []
-for string in range(0, number_of_strings):
-    buffer_ks.append( np.zeros(buffer_ks_size[string], dtype=np.float32) )
+buffer_ks = [
+    np.zeros(buffer_ks_size[string], dtype=np.float32)
+    for string in range(number_of_strings)
+]
 
 # Initialize the array with a plunk of random numbers.
 
 #buffer_ks_plunk = np.random.uniform(-1, 1, buffer_ks_size)
-buffer_ks_plunk = []
-for string in range(0, number_of_strings):
-    buffer_ks_plunk.append( np.random.uniform(-1, 1, buffer_ks_size[string]) )
+buffer_ks_plunk = [
+    np.random.uniform(-1, 1, buffer_ks_size[string])
+    for string in range(number_of_strings)
+]
 
 ptr_out = [1, 1, 1, 1] # pointer to karplus_strong 4 buffer.
 ptr_in  = [0, 0, 0, 0] # pointer to   "       "    "  "
@@ -69,20 +72,20 @@ def plunk_the_string(string_number):
 
 def copy_buffer_ks_to_buffer_output(result, frame_count):
     global buffer_ks, ptr_in, ptr_out, number_of_strings
-    for i in range(0, frame_count):
+    for i in range(frame_count):
         # Left channel.
         result[i, 0] = 0.0
-        for string in range(0, number_of_strings):
+        for string in range(number_of_strings):
             result[i, 0] += buffer_ks[string][ptr_in[string]]
         result[i, 0] /= number_of_strings
         # Righ channel.
         result[i, 1] = result[i, 0]  # Copy the left channel value to the right channel.
 
-        for string in range(0, number_of_strings):
+        for string in range(number_of_strings):
             buffer_ks[string][ptr_in[string]] = factor * ( buffer_ks[string][ptr_in[string]] + buffer_ks[string][ptr_out[string]] )
 
         # Update the global pointers of the circukar buffer.
-        for string in range(0, number_of_strings):
+        for string in range(number_of_strings):
             if ptr_in[string] < buffer_ks_size[string] - 1:
                 ptr_in[string] += 1
             else:
@@ -121,8 +124,7 @@ def encode(signal):
     # Convert a 2D numpy array into a byte stream for PyAudio.
     # Signal has chunk_size rows and channels columns.
     interleaved = signal.flatten()
-    out_data = interleaved.astype(np.float32).tostring()
-    return out_data
+    return interleaved.astype(np.float32).tostring()
 
 def encode_int16(signal):
     # Convert a 2D numpy array into a byte stream for PyAudio
@@ -130,8 +132,7 @@ def encode_int16(signal):
     # The output is scalled to a int16 value not a -1 to 1 value.
     interleaved = signal.flatten()
     interleaved = interleaved * ((2**15) - 1)
-    out_data = interleaved.astype(np.int16).tostring()
-    return out_data
+    return interleaved.astype(np.int16).tostring()
 
 def callback(in_data, frame_count, time_info, flag):
     global flag_plunk, b, a, result, number_of_strings, frame_count_global, frames_to_file #global variables for filter coefficients and array
